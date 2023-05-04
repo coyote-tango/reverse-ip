@@ -19,10 +19,9 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Build and Push to ECR
       env:
-        COMMIT_SHA: ${{ github.sha }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPO: reverse-ip-ecr
-        IMAGE_TAG: ${{ env.COMMIT_SHA }}
+        IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
