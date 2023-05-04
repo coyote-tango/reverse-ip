@@ -30,4 +30,9 @@ env/
 venv/
 ENV/
 
+# Ignore Terraform runtime data
+.terraform/
 
+# Ignore Terraform state files
+*.tfstate
+*.tfstate.backup
