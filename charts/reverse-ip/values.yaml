@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: 249369383028.dkr.ecr.us-east-2.amazonaws.com/reverse-ip-ecr
+  pullPolicy: Always
+
+serviceAccount:
+  create: false
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: true
+  className: ""
+  annotations:
+     kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: ""
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+autoscaling:
+    enabled: false
