@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: 249369383028.dkr.ecr.us-east-2.amazonaws.com/reverse-ip-ecr
+  repository: 249369383028.dkr.ecr.us-east-2.amazonaws.com/reverse-ip
   pullPolicy: Always
 
 serviceAccount:

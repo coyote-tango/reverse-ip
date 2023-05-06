@@ -3,14 +3,19 @@ on:
   push:
     branches: [main]
 jobs:
-  publish-chart:
+  install-chart:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
+
+    - name: Set up Helm
+      run: |
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+        helm version
 
     - name: Set AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -18,13 +23,7 @@ jobs:
 
     - name: Login to ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Install Helm
-      run: |
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        chmod 700 get_helm.sh
-        ./get_helm.sh
+      uses: aws-actions/amazon-ecr-login@v1.6.0
 
     - name: Package and Push to ECR
       env:
@@ -33,4 +32,19 @@ jobs:
         helm package ./charts/reverse-ip/ \
         --version 0.0.0-$GITHUB_SHA
         helm push reverse-ip-0.0.0-$GITHUB_SHA.tgz oci://$ECR_REGISTRY
+
+    - name: Deploy Helm
+      uses: bitovi/github-actions-deploy-eks-helm@v1.2.4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
+        cluster-name: reverse-ip-cluster
+        chart-repository: oci://249369383028.dkr.ecr.us-east-2.amazonaws.com
+        chart-path: reverse-ip
+        version: 0.0.0-${{ github.sha }}
+        name: reverse-ip
+        username: ${{ steps.login-ecr.outputs.docker_username_249369383028_dkr_ecr_us_east_2_amazonaws_com }}
+        password: ${{ steps.login-ecr.outputs.docker_password_249369383028_dkr_ecr_us_east_2_amazonaws_com }}
+        values: image.tag=${{ github.sha }}
 
